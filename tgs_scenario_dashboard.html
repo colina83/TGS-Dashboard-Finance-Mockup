@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TGS — Scenario comparison 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f3f0;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.15);
+  --text: #1a1917;
+  --text-2: #6b6a65;
+  --text-3: #9c9b96;
+  --blue: #185FA5;
+  --blue-light: #E6F1FB;
+  --blue-dark: #0C447C;
+  --green: #1D9E75;
+  --green-light: #E1F5EE;
+  --green-dark: #085041;
+  --purple: #534AB7;
+  --purple-light: #EEEDFE;
+  --purple-dark: #3C3489;
+  --orange: #D85A30;
+  --red: #A32D2D;
+  --radius: 10px;
+  --radius-sm: 6px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* ── TOP NAV ── */
+.nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-logo {
+  width: 32px; height: 32px;
+  background: var(--blue);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo svg { width: 18px; height: 18px; fill: white; }
+.nav-title { font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+.nav-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.nav-meta { font-size: 11px; color: var(--text-3); font-family: 'DM Mono', monospace; }
+
+/* ── MAIN LAYOUT ── */
+.main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.toolbar-left { display: flex; flex-direction: column; gap: 2px; }
+.toolbar-heading { font-size: 18px; font-weight: 500; letter-spacing: -0.02em; color: var(--text); }
+.toolbar-sub { font-size: 12px; color: var(--text-3); }
+.vessel-strip {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+}
+.vs-label { font-size: 10px; color: var(--text-3); margin-right: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.vbtn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.vbtn:hover { background: var(--surface2); }
+.vbtn.active { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* ── KPI CARDS ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.kpi-card.s2::before { background: var(--blue); }
+.kpi-card.s3::before { background: var(--green); }
+.kpi-card.s4::before { background: var(--purple); }
+.kpi-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.kpi-name { font-size: 13px; font-weight: 500; }
+.kpi-desc { font-size: 10px; color: var(--text-3); margin-top: 2px; line-height: 1.4; }
+.kpi-pill {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+  flex-shrink: 0;
+}
+.kpi-pill.s2 { background: var(--blue-light); color: var(--blue-dark); }
+.kpi-pill.s3 { background: var(--green-light); color: var(--green-dark); }
+.kpi-pill.s4 { background: var(--purple-light); color: var(--purple-dark); }
+.kpi-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.km {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 7px 8px;
+}
+.km-label { font-size: 9px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+.km-val { font-size: 14px; font-weight: 500; font-family: 'DM Mono', monospace; letter-spacing: -0.02em; color: var(--text); }
+.km-val.blue { color: var(--blue); }
+.km-val.green { color: var(--green); }
+.km-val.red { color: var(--red); }
+
+/* ── PANELS ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.panel-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 14px;
+}
+
+/* ── MIX CHART ── */
+.mix-wrap { position: relative; width: 100%; height: 140px; margin-bottom: 10px; }
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.chart-legend span { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── COMPARISON TABLE ── */
+.table-scroll { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 12px;
+}
+table th {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border-strong);
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-2);
+}
+table th:first-child { text-align: left; width: 30%; }
+table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+}
+table td:first-child {
+  text-align: left;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-2);
+  font-size: 11px;
+}
+table tr.sh td {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--surface2);
+  color: var(--text);
+  border-bottom: 1px solid var(--border-strong);
+  padding: 5px 10px;
+}
+table tr.st td {
+  font-weight: 500;
+  background: #fafaf8;
+  border-bottom: 1px solid var(--border-strong);
+}
+table tr.tr td {
+  font-weight: 500;
+  font-size: 13px;
+  border-top: 2px solid var(--border-strong);
+  border-bottom: none;
+}
+th.s2 { background: var(--blue-light); color: var(--blue-dark); }
+th.s3 { background: var(--green-light); color: var(--green-dark); }
+th.s4 { background: var(--purple-light); color: var(--purple-dark); }
+td.s2 { background: rgba(230,241,251,0.25); }
+td.s3 { background: rgba(225,245,238,0.25); }
+td.s4 { background: rgba(238,237,254,0.25); }
+.neg { color: var(--red) !important; }
+.pos { color: var(--green) !important; }
+
+/* ── CASH TABS ── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+  gap: 0;
+}
+.tab {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  padding: 8px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-3);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.12s;
+}
+.tab:hover { color: var(--text-2); }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+.tab-content { display: none; padding-top: 16px; }
+.tab-content.active { display: block; }
+.chart-wrap { position: relative; width: 100%; height: 240px; }
+.vlabel { font-size: 10px; color: var(--text-3); margin-bottom: 8px; }
+.cum-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.cum-legend span { display: flex; align-items: center; gap: 6px; }
+.leg-line { width: 20px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── FOOTER ── */
+.footer {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-3);
+  padding: 2rem 0 1rem;
+  font-family: 'DM Mono', monospace;
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 12 Q8 4 12 12 Q16 20 21 12"/></svg>
+    </div>
+    <div>
+      <div class="nav-title">TGS Marine Acquisition</div>
+      <div class="nav-sub">Scenario comparison dashboard</div>
+    </div>
+  </div>
+  <div class="nav-meta">FY 2026 · $M</div>
+</nav>
+
+<div class="main">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="toolbar-heading">Scenario comparison — 2026</div>
+      <div class="toolbar-sub">Multi-client &amp; contract acquisition · all figures in $M</div>
+    </div>
+    <div class="vessel-strip">
+      <span class="vs-label">Vessel</span>
+      <button class="vbtn active" onclick="setV(this)">All vessels</button>
+      <button class="vbtn" onclick="setV(this)">Ramform Titan</button>
+      <button class="vbtn" onclick="setV(this)">Ramform Atlas</button>
+      <button class="vbtn" onclick="setV(this)">Ramform Hyperion</button>
+      <button class="vbtn" onclick="setV(this)">Ramform Sovereign</button>
+      <button class="vbtn" onclick="setV(this)">Ramform Vanguard</button>
+      <button class="vbtn" onclick="setV(this)">Ramform Victory</button>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card s2">
+      <div class="kpi-head">
+        <div>
+          <div class="kpi-name">Scenario 2</div>
+          <div class="kpi-desc">Q2 2026 forecast base</div>
+        </div>
+        <span class="kpi-pill s2">S2</span>
+      </div>
+      <div class="kpi-metrics">
+        <div class="km"><div class="km-label">Total revenue</div><div class="km-val blue">$500.9M</div></div>
+        <div class="km"><div class="km-label">EBIT</div><div class="km-val">$147.6M</div></div>
+        <div class="km"><div class="km-label">EBIT %</div><div class="km-val">29%</div></div>
+        <div class="km"><div class="km-label">Net cash</div><div class="km-val green">$70.3M</div></div>
+        <div class="km"><div class="km-label">Max exposure</div><div class="km-val red">-$35.8M</div></div>
+        <div class="km"><div class="km-label">Utilisation</div><div class="km-val">86%</div></div>
+      </div>
+    </div>
+
+    <div class="kpi-card s3">
+      <div class="kpi-head">
+        <div>
+          <div class="kpi-name">Scenario 3</div>
+          <div class="kpi-desc">Split Asta Graben + Gullfaks(ATS) &amp; HYP W Africa</div>
+        </div>
+        <span class="kpi-pill s3">S3</span>
+      </div>
+      <div class="kpi-metrics">
+        <div class="km"><div class="km-label">Total revenue</div><div class="km-val blue">$500.6M</div></div>
+        <div class="km"><div class="km-label">EBIT</div><div class="km-val">$154.2M</div></div>
+        <div class="km"><div class="km-label">EBIT %</div><div class="km-val">31%</div></div>
+        <div class="km"><div class="km-label">Net cash</div><div class="km-val green">$69.2M</div></div>
+        <div class="km"><div class="km-label">Max exposure</div><div class="km-val red">-$35.3M</div></div>
+        <div class="km"><div class="km-label">Utilisation</div><div class="km-val">90%</div></div>
+      </div>
+    </div>
+
+    <div class="kpi-card s4">
+      <div class="kpi-head">
+        <div>
+          <div class="kpi-name">Scenario 4</div>
+          <div class="kpi-desc">Split + Brazil(ATS) + HYP to Var then Greece</div>
+        </div>
+        <span class="kpi-pill s4">S4</span>
+      </div>
+      <div class="kpi-metrics">
+        <div class="km"><div class="km-label">Total revenue</div><div class="km-val blue">$510.0M</div></div>
+        <div class="km"><div class="km-label">EBIT</div><div class="km-val">$165.1M</div></div>
+        <div class="km"><div class="km-label">EBIT %</div><div class="km-val" style="color:var(--green)">32%</div></div>
+        <div class="km"><div class="km-label">Net cash</div><div class="km-val green">$80.7M</div></div>
+        <div class="km"><div class="km-label">Max exposure</div><div class="km-val red">-$34.6M</div></div>
+        <div class="km"><div class="km-label">Utilisation</div><div class="km-val">89%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVENUE MIX -->
+  <div class="panel">
+    <div class="panel-label">Revenue mix by scenario</div>
+    <div class="mix-wrap">
+      <canvas id="mixChart" role="img" aria-label="Grouped bar chart of revenue mix per scenario">Revenue mix per scenario S2, S3, S4.</canvas>
+    </div>
+    <div class="chart-legend">
+      <span><span class="leg-dot" style="background:var(--blue)"></span>Contract</span>
+      <span><span class="leg-dot" style="background:var(--green)"></span>Pre-funding</span>
+      <span><span class="leg-dot" style="background:var(--purple)"></span>Rev. share</span>
+      <span><span class="leg-dot" style="background:var(--orange)"></span>JV contrib.</span>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="panel">
+    <div class="panel-label">Full scenario comparison · $M</div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Line item</th>
+            <th class="s2">S2 — Q2 forecast</th>
+            <th class="s3">S3 — Split + Gullfaks</th>
+            <th class="s4">S4 — Split + Brazil + Greece</th>
+          </tr>
+        </thead>
+        <tbody id="comp-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CASH CHARTS -->
+  <div class="panel" style="margin-bottom:0">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('cumulative',this)">Cumulative cash</button>
+      <button class="tab" onclick="switchTab('s2',this)">Scenario 2</button>
+      <button class="tab" onclick="switchTab('s3',this)">Scenario 3</button>
+      <button class="tab" onclick="switchTab('s4',this)">Scenario 4</button>
+    </div>
+
+    <div class="tab-content active" id="tab-cumulative">
+      <div class="cum-legend">
+        <span><span class="leg-line" style="background:var(--blue)"></span>S2 Q2 2026 forecast</span>
+        <span><span class="leg-line" style="background:var(--green)"></span>S3 Split + Gullfaks(ATS)</span>
+        <span><span class="leg-line" style="background:var(--purple)"></span>S4 Split + Brazil + Greece</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="cumulChart" role="img" aria-label="Cumulative cash line chart Jan–Dec 2026 for three scenarios">S2 ends 53.9, S3 ends 48.4, S4 ends 57.7.</canvas>
+      </div>
+    </div>
+
+    <div class="tab-content" id="tab-s2">
+      <div class="vlabel">S2 · Q2 2026 forecast — monthly cash $M</div>
+      <div class="chart-wrap"><canvas id="barS2" role="img" aria-label="S2 monthly cash bar chart">S2 monthly cash Jan–Dec 2026.</canvas></div>
+    </div>
+    <div class="tab-content" id="tab-s3">
+      <div class="vlabel">S3 · Split Asta Graben + Gullfaks(ATS) &amp; HYP W Africa — monthly cash $M</div>
+      <div class="chart-wrap"><canvas id="barS3" role="img" aria-label="S3 monthly cash bar chart">S3 monthly cash Jan–Dec 2026.</canvas></div>
+    </div>
+    <div class="tab-content" id="tab-s4">
+      <div class="vlabel">S4 · Split + Brazil(ATS) + HYP to Var then Greece — monthly cash $M</div>
+      <div class="chart-wrap"><canvas id="barS4" role="img" aria-label="S4 monthly cash bar chart">S4 monthly cash Jan–Dec 2026.</canvas></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">TGS Marine Acquisition · Internal use only · Generated 2026</div>
+
+<script>
+const months = ['Jan-26','Feb-26','Mar-26','Apr-26','May-26','Jun-26','Jul-26','Aug-26','Sep-26','Oct-26','Nov-26','Dec-26'];
+const s2 = [7.8,-9.3,-35.8,-7.4,9.7,-19.2,-20.3,16.6,39.0,63.4,46.1,53.9];
+const s3 = [7.9,-9.1,-35.3,-5.5,10.9,-23.8,-27.5,10.7,35.6,50.9,46.1,48.4];
+const s4 = [4.5,-12.4,-34.6,-3.9,12.6,-21.3,-15.9,14.4,42.5,67.5,75.5,57.7];
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+function setV(btn) {
+  document.querySelectorAll('.vbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#9c9b96';
+
+new Chart(document.getElementById('mixChart'), {
+  type: 'bar',
+  data: {
+    labels: ['S2', 'S3', 'S4'],
+    datasets: [
+      { label: 'Contract',    data: [180.2, 163.3, 174.6], backgroundColor: '#185FA5' },
+      { label: 'Pre-funding', data: [323.0, 339.5, 320.1], backgroundColor: '#1D9E75' },
+      { label: 'Rev. share',  data: [-58.5, -58.5, -50.8], backgroundColor: '#534AB7' },
+      { label: 'JV contrib.', data: [56.3,  56.3,  66.2],  backgroundColor: '#D85A30' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(1) + 'M' } } },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      y: { ticks: { callback: v => '$' + v + 'M', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('cumulChart'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [
+      { label: 'S2', data: s2, borderColor: '#185FA5', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#185FA5', tension: 0.2 },
+      { label: 'S3', data: s3, borderColor: '#1D9E75', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#1D9E75', tension: 0.2, borderDash: [5, 3] },
+      { label: 'S4', data: s4, borderColor: '#534AB7', backgroundColor: 'transparent', borderWidth: 2.5, pointRadius: 3, pointBackgroundColor: '#534AB7', tension: 0.2, borderDash: [9, 3] }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(1) + 'M' } } },
+    scales: {
+      x: { ticks: { autoSkip: false, maxRotation: 0, font: { size: 10 } }, grid: { display: false } },
+      y: { ticks: { callback: v => (v < 0 ? '-' : '') + '$' + Math.abs(v) + 'M', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
+    }
+  }
+});
+
+function makeBar(id, data) {
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{ label: 'Cash', data, backgroundColor: data.map(v => v >= 0 ? '#185FA5' : '#E24B4A'), borderRadius: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y.toFixed(1) + 'M' } } },
+      scales: {
+        x: { ticks: { autoSkip: false, maxRotation: 0, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { callback: v => (v < 0 ? '-' : '') + '$' + Math.abs(v) + 'M', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.05)' } }
+      }
+    }
+  });
+}
+makeBar('barS2', s2);
+makeBar('barS3', s3);
+makeBar('barS4', s4);
+
+const rows = [
+  { label: 'Revenue', sh: true },
+  { label: 'Contract',          s2: 180.2,  s3: 163.3,  s4: 174.6 },
+  { label: 'Pre-funding',       s2: 323.0,  s3: 339.5,  s4: 320.1 },
+  { label: 'Revenue share',     s2: -58.5,  s3: -58.5,  s4: -50.8 },
+  { label: 'JV contribution',   s2: 56.3,   s3: 56.3,   s4: 66.2  },
+  { label: 'Total revenue',     s2: 500.9,  s3: 500.6,  s4: 510.0, st: true },
+  { label: 'Costs', sh: true },
+  { label: 'Cash cost',         s2: -112.8, s3: -102.8, s4: -109.4 },
+  { label: 'JV interco costs',  s2: -56.3,  s3: -56.3,  s4: -66.2  },
+  { label: 'Stand-by / Idle / Yard', s2: -14.6, s3: -11.2, s4: -10.8 },
+  { label: 'Total costs',       s2: -183.7, s3: -170.2, s4: -186.3, st: true },
+  { label: 'EBITDA',            s2: 317.2,  s3: 330.3,  s4: 323.6, st: true },
+  { label: 'Depreciation',      s2: -169.5, s3: -176.2, s4: -158.5 },
+  { label: 'EBIT',              s2: 147.6,  s3: 154.2,  s4: 165.1, st: true },
+  { label: 'EBIT %',            s2: '29%',  s3: '31%',  s4: '32%' },
+  { label: 'Key metrics', sh: true },
+  { label: 'Utilisation',       s2: '86%',  s3: '90%',  s4: '89%' },
+  { label: 'Contract mix',      s2: '33%',  s3: '30%',  s4: '31%' },
+  { label: 'MC mix',            s2: '67%',  s3: '70%',  s4: '69%' },
+  { label: 'Max cash exposure', s2: -35.8,  s3: -35.3,  s4: -34.6 },
+  { label: 'MC investment',     s2: 313.8,  s3: 332.5,  s4: 312.5 },
+  { label: 'Simplified net cash', s2: 70.3, s3: 69.2,   s4: 80.7, tr: true },
+];
+
+const tbody = document.getElementById('comp-tbody');
+const fmt = v => { if (typeof v === 'string') return v; if (v === undefined) return ''; return v < 0 ? '(' + Math.abs(v).toFixed(1) + ')' : v.toFixed(1); };
+const nc  = v => { if (typeof v === 'string') return ''; return v === undefined ? '' : v < 0 ? ' neg' : ' pos'; };
+
+rows.forEach(r => {
+  const tr = document.createElement('tr');
+  if (r.sh) tr.className = 'sh';
+  else if (r.tr) tr.className = 'tr';
+  else if (r.st) tr.className = 'st';
+  tr.innerHTML = r.sh
+    ? `<td colspan="4">${r.label}</td>`
+    : `<td>${r.label}</td>
+       <td class="s2${nc(r.s2)}">${fmt(r.s2)}</td>
+       <td class="s3${nc(r.s3)}">${fmt(r.s3)}</td>
+       <td class="s4${nc(r.s4)}">${fmt(r.s4)}</td>`;
+  tbody.appendChild(tr);
+});
+</script>
+</body>
+</html>
